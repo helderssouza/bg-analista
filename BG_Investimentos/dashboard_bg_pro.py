@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import os
 
 # 🎯 Configuração da página
 st.set_page_config(page_title="BG PRO — Ações e FIIs", layout="wide")
@@ -14,25 +15,27 @@ menu = st.sidebar.selectbox(
     ("🏠 Dashboard Geral", "📈 Ações", "🏢 FIIs")
 )
 
-# 🎯 Upload dos Arquivos (ou fallback)
 st.sidebar.subheader("📥 Upload dos Dados")
 
-acoes_file = st.sidebar.file_uploader("Upload CSV de Ações", type=['csv'])
-fiis_file = st.sidebar.file_uploader("Upload CSV de FIIs", type=['csv'])
+# 🔥 Função para carregar dados com fallback
+def carregar_dados(caminho, texto_upload):
+    if os.path.exists(caminho):
+        return pd.read_csv(caminho)
+    else:
+        arquivo = st.sidebar.file_uploader(texto_upload, type=["csv"])
+        if arquivo is not None:
+            return pd.read_csv(arquivo)
+        else:
+            st.warning(f"⚠️ Envie o arquivo {texto_upload} na barra lateral.")
+            st.stop()
 
 # 📄 Carregar Ações
-if acoes_file:
-    df_acoes = pd.read_csv(acoes_file)
-else:
-    df_acoes = pd.read_csv('./dados/acoes.csv')
+df_acoes = carregar_dados('BG_Investimentos/dados/acoes.csv', "Upload CSV de Ações")
 
 # 📄 Carregar FIIs
-if fiis_file:
-    df_fiis = pd.read_csv(fiis_file)
-else:
-    df_fiis = pd.read_csv('./dados/fiis.csv')
+df_fiis = carregar_dados('BG_Investimentos/dados/fiis.csv', "Upload CSV de FIIs")
 
-# 🎯 Função de recomendação para Ações
+# 🔥 Função de recomendação para Ações
 def gerar_recomendacao_acao(row):
     if row['Upside (%)'] > 10 and row['Dividend Yield (%)'] >= 6 and row['ROE (%)'] >= 15:
         return 'Comprar'
@@ -44,7 +47,7 @@ def gerar_recomendacao_acao(row):
 if 'Recomendação' not in df_acoes.columns:
     df_acoes['Recomendação'] = df_acoes.apply(gerar_recomendacao_acao, axis=1)
 
-# 🎯 Função de recomendação para FIIs
+# 🔥 Função de recomendação para FIIs
 def gerar_recomendacao_fii(row):
     if row['P/VP'] < 0.95 and row['Dividend Yield (%)'] > 9 and row['Vacância (%)'] < 5:
         return 'Comprar'
@@ -56,9 +59,9 @@ def gerar_recomendacao_fii(row):
 if 'Recomendação' not in df_fiis.columns:
     df_fiis['Recomendação'] = df_fiis.apply(gerar_recomendacao_fii, axis=1)
 
-# 🔥 =========================
+# =====================
 # 🏠 DASHBOARD GERAL
-# 🔥 =========================
+# =====================
 if menu == "🏠 Dashboard Geral":
     st.subheader("📊 Visão Geral dos Ativos")
 
@@ -107,9 +110,9 @@ if menu == "🏠 Dashboard Geral":
     )
     col8.plotly_chart(fig_fiis, use_container_width=True)
 
-# 🔥 =========================
+# =====================
 # 📈 DASHBOARD AÇÕES
-# 🔥 =========================
+# =====================
 elif menu == "📈 Ações":
     st.subheader("📈 Análise de Ações")
 
@@ -141,9 +144,9 @@ elif menu == "📈 Ações":
         mime='text/csv',
     )
 
-# 🔥 =========================
+# =====================
 # 🏢 DASHBOARD FIIs
-# 🔥 =========================
+# =====================
 elif menu == "🏢 FIIs":
     st.subheader("🏢 Análise de FIIs")
 
