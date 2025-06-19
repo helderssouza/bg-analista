@@ -4,7 +4,7 @@ import plotly.express as px
 import os
 
 # ==============================================
-# 🔒 SISTEMA DE LOGIN
+# 🔒 SISTEMA DE LOGIN + LOGOUT
 # ==============================================
 
 # 🔐 Usuários e Senhas
@@ -13,22 +13,35 @@ USER_CREDENTIALS = {
     "helder": "abcd"
 }
 
+# Inicializar o estado de sessão
+if 'logado' not in st.session_state:
+    st.session_state['logado'] = False
+if 'usuario' not in st.session_state:
+    st.session_state['usuario'] = ""
+
 # 🔒 Função de autenticação
 def autenticar_usuario():
-    st.sidebar.subheader("🔑 Login")
-    usuario = st.sidebar.text_input("Usuário")
-    senha = st.sidebar.text_input("Senha", type="password")
-    if st.sidebar.button("Entrar"):
-        if usuario in USER_CREDENTIALS and senha == USER_CREDENTIALS[usuario]:
-            st.sidebar.success(f"✅ Bem-vindo, {usuario}!")
-            return True
-        else:
-            st.sidebar.error("❌ Usuário ou senha incorretos.")
-            return False
-    return False
+    with st.sidebar:
+        st.subheader("🔑 Login")
+        usuario = st.text_input("Usuário")
+        senha = st.text_input("Senha", type="password")
+        if st.button("Entrar"):
+            if usuario in USER_CREDENTIALS and senha == USER_CREDENTIALS[usuario]:
+                st.session_state['logado'] = True
+                st.session_state['usuario'] = usuario
+                st.success(f"✅ Bem-vindo, {usuario}!")
+            else:
+                st.error("❌ Usuário ou senha incorretos.")
 
-# 🔒 Verificar login antes de carregar o app
-if not autenticar_usuario():
+# 🔒 Função de logout
+def logout():
+    st.session_state['logado'] = False
+    st.session_state['usuario'] = ""
+    st.experimental_rerun()
+
+# 🔐 Controle de login
+if not st.session_state['logado']:
+    autenticar_usuario()
     st.stop()
 
 # ==============================================
@@ -40,7 +53,11 @@ st.set_page_config(page_title="BG PRO — Ações e FIIs", layout="wide")
 st.title("💼 BG PRO — Dashboard de Ações e FIIs")
 st.markdown("---")
 
-# 🎯 Menu Lateral
+# 🎯 Menu Lateral + Logout
+st.sidebar.success(f"👋 Usuário: {st.session_state['usuario']}")
+if st.sidebar.button("🚪 Logout"):
+    logout()
+
 menu = st.sidebar.selectbox(
     "Selecione a Análise:",
     ("🏠 Dashboard Geral", "📈 Ações", "🏢 FIIs")
