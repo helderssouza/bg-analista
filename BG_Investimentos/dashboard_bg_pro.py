@@ -3,7 +3,38 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# 🎯 Configuração da página
+# ==============================================
+# 🔒 SISTEMA DE LOGIN
+# ==============================================
+
+# 🔐 Usuários e Senhas
+USER_CREDENTIALS = {
+    "admin": "1234",
+    "helder": "abcd"
+}
+
+# 🔒 Função de autenticação
+def autenticar_usuario():
+    st.sidebar.subheader("🔑 Login")
+    usuario = st.sidebar.text_input("Usuário")
+    senha = st.sidebar.text_input("Senha", type="password")
+    if st.sidebar.button("Entrar"):
+        if usuario in USER_CREDENTIALS and senha == USER_CREDENTIALS[usuario]:
+            st.sidebar.success(f"✅ Bem-vindo, {usuario}!")
+            return True
+        else:
+            st.sidebar.error("❌ Usuário ou senha incorretos.")
+            return False
+    return False
+
+# 🔒 Verificar login antes de carregar o app
+if not autenticar_usuario():
+    st.stop()
+
+# ==============================================
+# 🎯 CONFIGURAÇÃO DO DASHBOARD
+# ==============================================
+
 st.set_page_config(page_title="BG PRO — Ações e FIIs", layout="wide")
 
 st.title("💼 BG PRO — Dashboard de Ações e FIIs")
