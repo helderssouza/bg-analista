@@ -37,7 +37,7 @@ def autenticar_usuario():
 def logout():
     st.session_state['logado'] = False
     st.session_state['usuario'] = ""
-    st.experimental_rerun()
+    st.rerun()
 
 # 🔐 Controle de login
 if not st.session_state['logado']:
